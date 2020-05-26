@@ -1,1 +1,195 @@
 
+题目一 
+
+输出结果为10，原因如下：
+Var声明的i，作用域在全局，所以每一次循环，新的i值都会覆盖旧值，导致最后输出的是最后一轮i的值。a[6]()执行时，for循环已经执行结束，结束时i的值为10，所以a[6]()的结果为10。
+
+拓展
+var a = [];
+for (var i = 0; i < 10; i++) {
+    a[i] = function () {
+        console.log(i);
+    };
+}
+a[2]();
+var b = [];
+for (let k = 0; k < 10; k++) {
+    b[k] = function () {
+        console.log(k);
+    };
+}
+b[2](); 
+    // 原因： i是var声明的，在全局范围内都有效，console.log(i)，里面的i指向的就是全局的i，所以最后输出的是10。
+    //  k是let声明的，只在本轮循环局部有效，console.log(k)，每一次for循环的k都为新变量，所以最后输出的是2。
+
+题目二 
+ 先是var声明了全局变量tmp，但是在快级作用域内let又声明了一个局部变量tmp，导致绑定了这个快级作用域；因此打印出tmp会报错。
+
+题目三
+
+var arr=[12,34,32,89,4];
+var minVal=arr.reduce(function(num1,num2){
+    return num2>num1?num1:num2
+})
+console.log(minVal)
+
+
+题目四
+使用var声明的变量，仅在function是局部变量，其余都为全局变量（），其作用域为该语句所在的函数内，且存在变量提升现象；
+使用let声明的变量，其作用域为该语句所在的代码块内，不存在变量提升；
+使用const声明的是常量，必须初始化，在后面出现的代码中不能再修改该常量的值。
+
+题目五
+结果为20，
+原因：this指向问题，谁调用指向谁。这里obj调用fn函数，this指向obj，所以this.a的结束就是20
+var a=10;
+var obj={
+    a:20,
+    fn(){
+        setTimeout(()=>{
+            console.log(this.a)
+        })
+    }
+}
+obj.fn()
+
+
+题目六
+1.简介
+Symbol数据类型，用来表示独一无二的值，主要是用来在为对象添加新的属性时，防止属性名的冲突。
+Symbol通过Symbol函数生成，基本上是一种类似字符串之外的其他类型。
+
+2.Symbol作为属性名
+Symbol是独一无二的，可以用作对象的属性名，能保证不会出现同名的属性，对于一个对象由多个模块构成的情况非常有用，能防止某一个键改写和覆盖。
+var b=Symbol();
+var a={};
+a[b]='red';
+console.log(a[b]);
+
+注意:Symbol值作为对象属性时，不能使用点运算符。
+3.Symbol可以定义一组枚举
+可以定义一组常量，保证这组常量的值都是不相等的。
+let levels={
+    DEBUG: Symbol('debug'),
+    INFO: Symbol('info'),
+    WARN: Symbol('warn')
+};
+console.log(levels.DEBUG);   //Symbol(debug)
+
+可以用于消除魔术字符串，在代码中多次出现，与代码形成强耦合的某一个字符串或数据，应该用变量或者枚举来代替。
+4.单例的Symbol
+希望使用同一个Symbol。Symbol.for方法可以接受一个字符串为参数，然后搜索是否有以该字符串为名称的Symbol值，如果有就返回这个值，否则就新建并返回一个以该字符串为名称的Symbol值。
+let a=Symbol.for('foo');
+let b=Symbol.for('foo');
+console.log(a===b);   //true
+
+
+5.Symbol构造函数
+构造函数接收一个字符串作为参数，只是为了转化为字符串比较容易区分
+但是相同参数的Symbol函数返回值是不同的
+Symbol.for函数可以找到相同字符串名称的Symbol值
+console.log(Symbol('red')===Symbol('red'));   //false
+
+console.log(Symbol.for('red')===Symbol.for('red'));   //true
+
+题目七
+浅拷贝（shallowCopy）只是增加了一个指针指向已存在的内存地址，
+深拷贝（deepCopy）是增加了一个指针并且申请了一个新的内存，使这个增加的指针指向这个新的内存，
+使用深拷贝的情况下，释放内存的时候不会因为出现浅拷贝时释放同一个内存的错误。
+ 
+浅复制：仅仅是指向被复制的内存地址，如果原地址发生改变，那么浅复制出来的对象也会相应的改变。
+深复制：在计算机中开辟一块新的内存地址用于存放复制的对象。
+
+题目八
+Js异步
+所有任务可以分成两种，一种是同步任务（synchronous），另一种是异步任务（asynchronous）。同步任务指的是，在主线程上排队执行的任务，只有前一个任务执行完毕，才能执行后一个任务；异步任务指的是，不进入主线程、而进入"任务队列"（task queue）的任务，只有等主线程任务执行完毕，"任务队列"开始通知主线程，请求执行任务，该任务才会进入主线程执行。
+具体来说，异步运行机制如下：
+（1）所有同步任务都在主线程上执行，形成一个执行栈（execution context stack）。
+（2）主线程之外，还存在一个"任务队列"（task queue）。只要异步任务有了运行结果，就在"任务队列"之中放置一个事件。
+（3）一旦"执行栈"中的所有同步任务执行完毕，系统就会读取"任务队列"，看看里面有哪些事件。那些对应的异步任务，于是结束等待状态，进入执行栈，开始执行。
+（4）主线程不断重复上面的第三步。
+
+Event loop
+javascript上， 所有同步任务都在主线程上执行，也可以理解为存在一个“执行栈”。
+主线程外，还有一个“任务队列”，任务队列的作用，就在等待异步任务的结果，只要异步任务有了运行结果，就会加入到“任务队列”中。
+一旦执行栈中所有同步任务执行完毕，就从 任务队列 中读取“任务”加入到“执行栈”中。
+主线程不断的在循环上面的步骤。
+
+宏任务和微任务
+宏任务是主流，当js开始被执行的时候，就是开启一个宏任务，在宏任务中执行一条一条的指令；
+宏任务可以同时有多个，但会按顺序一个一个执行；
+每一个宏任务，后面都可以跟一个微任务队列，如果微任务队列中有指令或方法，那么就会执行；如果没有，则开始执行下一个宏任务，直到所有的宏任务执行完为止，微任务相当于宏任务的小尾巴；
+为什么有了宏任务，还会有微任务存在？因为宏任务太占用性能，当需要一些较早就准备好的方法，排在最后才执行的时候，又不想新增一个宏任务，那么就可以把这些方法，一个一个的放在微任务队列里面，在这个宏任务中的代码执行完后，就会执行微任务队列。
+题目九
+new Promise(function(resolve,reject){
+    setTimeout(() => {
+        resolve( console.log('hello'))
+        }, 10);
+}).then(function(data){
+    setTimeout(() => {
+         console.log(data+'lagou')
+        }, 10);
+}).then(function(data){
+    setTimeout(() => {
+        console.log(data+'i love u')
+       }, 10);
+})
+
+题目十
+JavaScript
+JavaScript是一种基于客户端浏览器的，基于对象、事件驱动式的脚本语言。稍提一下，JavaScript和Java没有任何关系，两者相当于雷峰塔和雷锋的关系。
+1.JavaScript是一种脚本编写语言，无需编译，只要嵌入HTML代码中，就能在浏览器中加载执行。
+2.JavaScript是一种基于对象的语言，可以创建对象同时使用现有对象。但是JavaScript并不支持面向对象语言所承载的继承和重载功能。
+3.JavaScript使用的变量是弱类型。
+4.JavaScript语言较为安全，仅在浏览器端执行，不会访问本地硬盘数据。
+5.JavaScript语言具有动态性。JavaScript是事件驱动的，只根据用户的操作做出相应的反应处理。
+6.JavaScript只依赖于浏览器，与操作系统的因素无关。因此JavaScript是一种跨平台的语言。
+7.JavaScript兼容性极好，能够与其他技术（如XML、REST API等）一起使用
+TypeScript
+TypeScript是JavaScript类型的超类，它可以编译成纯JavaScript。TypeScript可以在任何浏览器、任何计算机和任何操作系统上运行，并且是开源的。
+1.TypeScript是Microsoft推出的开源语言，使用Apache授权协议
+2.TypeScript增加了静态类型、类、模块、接口和类型注解
+3.TypeScript可用于开发大型的应用
+4.TypeScript易学易于理解
+JavaScript和TypeScript的主要差异
+TypeScript可以使用JavaScript中的所有代码和编程概念，TypeScript是为了使JavaScript的开发变得更加容易而创建的。
+1.TypeScript从核心语言方面和类概念方面的模塑方面对JavaScript对象模型进行扩展。
+2.JavaScript代码可以在无需任何修改的情况下与TypeScript一同工作，同时可以使用编译器将TypeScript代码转换为JavaScript。
+3.TypeScript通过类型注解提供编译时的静态类型检查。
+4.TypeScript中的数据要求带有明确的类型，JavaScript不要求。
+5.TypeScript提供了缺省参数值。
+6.TypeScript引入了JavaScript中没有的“类”概念。
+7.TypeScript中引入模块的概念，可以把声明、数据、函数和类封装在模块中。
+TypeScript的优势
+1.静态类型化，允许开发人员编写更健壮的代码并对其进行维护。
+2.大型的开发项目，使用TypeScript工具来进行重构更容易、便捷。
+3.类型安全，在编码期间检测错误的功能，而不是在编译项目时检测错误。
+4.干净的ECMAScript6代码，自动完成和动态输入等因素有助于提高开发人员的工作效率。
+JavaScript的优势
+1.JavaScript的开发者社区仍然巨大而活跃，在社区可以很容易找到大量成熟的开发项目和可用资源。
+2.JavaScript语言发展较早，也较为成熟。
+3.TypeScript代码需要被编译（成JavaScript）
+4.不需要注释
+5.JavaScript的灵活性更高
+
+题目十一
+TypeScript优点
+TypeScript 增加了代码的可读性和可维护性
+类型系统实际上是最好的文档，大部分的函数看看类型的定义就可以知道如何使用了
+可以在编译阶段就发现大部分错误，这总比在运行时候出错好
+增强了编辑器和 IDE 的功能，包括代码补全、接口提示、跳转到定义、重构等
+TypeScript 非常包容
+TypeScript 是 JavaScript 的超集，.js 文件可以直接重命名为 .ts 即可
+即使不显式的定义类型，也能够自动做出[类型推论]()
+可以定义从简单到复杂的几乎一切类型
+即使 TypeScript 编译报错，也可以生成 JavaScript 文件
+兼容第三方库，即使第三方库不是用 TypeScript 写的，也可以编写单独的类型文件供 TypeScript 读取
+TypeScript 拥有活跃的社区
+大部分第三方库都有提供给 TypeScript 的类型定义文件
+Google 开发的 Angular2 就是使用 TypeScript 编写的
+TypeScript 拥抱了 ES6 规范，也支持部分 ESNext 草案的规范
+TypeScript 的缺点
+有一定的学习成本，需要理解接口（Interfaces）、泛型（Generics）、类（Classes）、枚举类型（Enums）等前端工程师可能不是很熟悉的概念
+短期可能会增加一些开发成本，毕竟要多写一些类型的定义，不过对于一个需要长期维护的项目，TypeScript 能够减少其维护成本
+集成到构建流程需要一些工作量
+可能和一些库结合的不是很完美
